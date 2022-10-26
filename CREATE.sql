@@ -1,0 +1,46 @@
+CREATE TABLE IF NOT EXISTS genre (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(60) NOT NULL UNIQUE 
+);
+
+CREATE TABLE IF NOT EXISTS performer (
+	id SERIAL PRIMARY KEY,
+	alias VARCHAR(60) NOT NULL UNIQUE 
+);
+
+CREATE TABLE IF NOT EXISTS performance_genres (
+	genre_id INTEGER NOT NULL REFERENCES genre(id),
+	performer_id INTEGER NOT NULL REFERENCES performer(id),
+	CONSTRAINT pk1 PRIMARY KEY (genre_id, performer_id)
+);
+
+CREATE TABLE IF NOT EXISTS album (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(60) NOT NULL UNIQUE,
+	date INTEGER NOT NULL CHECK (date > 1950 AND date <= 2022)
+);
+
+CREATE TABLE IF NOT EXISTS discography (
+	album_id INTEGER NOT NULL REFERENCES album(id),
+	performer_id INTEGER NOT NULL REFERENCES performer(id),
+	CONSTRAINT pk2 PRIMARY KEY (album_id, performer_id)
+);
+
+CREATE TABLE IF NOT EXISTS track (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(60) NOT NULL UNIQUE,
+	duration INTEGER NOT NULL CHECK (duration > 0 AND duration < 1200),
+	album INTEGER NOT NULL REFERENCES album(id)
+);
+
+CREATE TABLE IF NOT EXISTS collection (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(60) NOT NULL UNIQUE,
+	date INTEGER NOT NULL CHECK (date > 1950 AND date <= 2022)
+);
+
+CREATE TABLE IF NOT EXISTS completed_collection (
+	collection_id INTEGER NOT NULL REFERENCES collection(id),
+	track_id INTEGER NOT NULL REFERENCES track(id),
+	CONSTRAINT pk3 PRIMARY KEY (collection_id, track_id)
+);
