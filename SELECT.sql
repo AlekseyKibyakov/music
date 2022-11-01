@@ -39,23 +39,21 @@ ORDER BY a.name
 SELECT alias a, date FROM discography di 
 LEFT JOIN album al ON di.album_id = al.id 
 LEFT JOIN performer p ON di.performer_id = p.id
-WHERE performer_id != (
+WHERE performer_id NOT IN (
 	SELECT di2.performer_id FROM discography di2
 	LEFT JOIN album al2 ON di2.album_id = al2.id
 	WHERE date = 2020
 	)
-GROUP BY a, date
 ORDER BY a
 
 --названия сборников, в которых присутствует конкретный исполнитель (Kanye West);
-SELECT alias, c.name FROM collection c 
+SELECT DISTINCT alias, c.name FROM collection c 
 LEFT JOIN completed_collection cc ON c.id = cc.collection_id 
 LEFT JOIN track t ON cc.track_id = t.id 
 LEFT JOIN album a ON t.album  = a.id 
 LEFT JOIN discography d ON a.id = d.album_id 
 LEFT JOIN performer p ON d.performer_id = p.id
 WHERE alias = 'Kanye West'
-GROUP BY alias, c.name
 
 --название альбомов, в которых присутствуют исполнители более 1 жанра
 SELECT al.name, COUNT(pg.performer_id) FROM album al
@@ -76,16 +74,15 @@ LEFT JOIN discography d ON d.performer_id  = p.id
 LEFT JOIN album a ON d.album_id = a.id 
 LEFT JOIN track t ON t.album = a.id 
 WHERE duration = (SELECT MIN(duration) FROM track)
-GROUP BY p.alias, t.id, t.name 
 
 --название альбомов, содержащих наименьшее количество треков.
 SELECT a.name, a.id, COUNT(t.album) FROM track t
 LEFT JOIN album a ON t.album = a.id 
 GROUP BY a.name, a.id
 HAVING COUNT(t.id) = (
-	SELECT MIN(t2.album) FROM track t2
-	LEFT JOIN album a2 ON t2.album = a2.id 
-	ORDER BY MIN(t2.album)
+	SELECT COUNT(t2.album) FROM track t2
+	LEFT JOIN album a2 ON t2.album = a2.id
+	GROUP BY a2.id
+	ORDER BY COUNT(t2.album)
+	LIMIT 1
 	)
-
-
